@@ -11,14 +11,14 @@ The app is designed for fast, low-click insight into **Recent (last 14 days)** v
 ---
 
 ## Repository structure
-pd-analyst-shiny/
-app.R
-report.Rmd
-README.md
-data/
+`pd-analyst-shiny/`
+`app.R`
+`report.Rmd`
+`README.md`
+`data/
 pd_analyst_goals.csv
 pd_analyst_events.csv
-pd_analyst_pitches.csv
+pd_analyst_pitches.csv`
 
 ---
 
@@ -64,25 +64,25 @@ tinytex::install_tinytex()
 ## App views (required)
 1) Player Overview
 
-Select a Player ID
+- Select a Player ID
 
-View stated performance goals
+- View stated performance goals
 
-View KPI summary cards comparing Recent (last 14 days) vs Full-season:
+- View KPI summary cards comparing Recent (last 14 days) vs Full-season:
 
-BB%, K%, SLG, FPS%
+- BB%, K%, SLG, FPS%
 
-Goal status table compares Recent vs Season vs any goal target (if present in goals data)
+- Goal status table compares Recent vs Season vs any goal target (if present in goals data)
 
 2) Trends View
 
-Daily time series for selected KPI (minimal interaction: choose metric + view)
+- Daily time series for selected KPI (minimal interaction: choose metric + view)
 
-“Most recent outing” summary table for quick context
+- “Most recent outing” summary table for quick context
 
 3) Goals View
 
-Displays the player’s stated goals (primary/secondary/tertiary)
+- Displays the player’s stated goals (primary/secondary/tertiary)
 
 
 ---
@@ -91,60 +91,60 @@ Displays the player’s stated goals (primary/secondary/tertiary)
 ## Coach workflows (examples)
 Workflow A: Quick check-in before a bullpen/game
 
-Select player
+- Select player
 
-Review goals
+- Review goals
 
-Compare Recent vs Season KPI cards to see direction and magnitude
+- Compare Recent vs Season KPI cards to see direction and magnitude
 
-Go to Trends and quickly check volatility over time
+- Go to Trends and quickly check volatility over time
 
-Download the PDF to share with the player
+- Download the PDF to share with the player
 
 Workflow B: Identify process vs results mismatch
 
-Select player
+- Select player
 
-Look at BB% and K% (plate discipline trend)
+- Look at BB% and K% (plate discipline trend)
 
-Check SLG trend (power / quality of contact proxy)
+- Check SLG trend (power / quality of contact proxy)
 
-Use “Most recent outing” to anchor what just happened
+- Use “Most recent outing” to anchor what just happened
 
 Workflow C: Goals-first coaching conversation
 
-Select player
+- Select player
 
-Start with stated goals
+- Start with stated goals
 
-Use Goal Status table to show current standing (Recent vs Season)
+- Use Goal Status table to show current standing (Recent vs Season)
 
-Download PDF so the athlete leaves with a clear summary
+- Download PDF so the athlete leaves with a clear summary
 
 
 ---
 
 
 ## KPI definitions (implementation)
-Hitting (from pd_analyst_events.csv)
+Offense (from pd_analyst_events.csv)
 
-PA: plate appearances (from pa column if present; otherwise computed from available outcomes in code)
+- PA: plate appearances (from pa column if present; otherwise computed from available outcomes in code)
 
-BB% = BB / PA
+- BB% = BB / PA
 
-K% = SO / PA
+- K% = SO / PA
 
-SLG = Total Bases / AB
+- SLG = Total Bases / AB
 
-Total Bases derived from 1B/2B/3B/HR outcome columns
+- Total Bases derived from 1B/2B/3B/HR outcome columns
 
 Pitching (from pd_analyst_pitches.csv)
 
-FPS% (First Pitch Strike %) = proportion of plate appearances where the first pitch is a strike
+- FPS% (First Pitch Strike %) = proportion of plate appearances where the first pitch is a strike
 
-First pitch is identified as 0–0 count (e.g., balls_before == 0 and strikes_before == 0, or equivalent grouping logic in code)
+- First pitch is identified as 0–0 count (e.g., balls_before == 0 and strikes_before == 0, or equivalent grouping logic in code)
 
-Strike pitch results counted as: called_strike, swinging_strike, foul
+- Strike pitch results counted as: called_strike, swinging_strike, foul
 
 
 ---
@@ -158,11 +158,11 @@ Dates are read from sched_date and parsed as mm/dd/yyyy.
 
 Player identity is unified across sources by mapping each dataset’s ID column to a canonical player_id used throughout the app:
 
-Goals: player_id
+- Goals: player_id
 
-Events: mapped to player_id (from the event file’s ID column)
+- Events: mapped to player_id (from the event file’s ID column)
 
-Pitches: mapped to player_id (from the pitch file’s ID column)
+- Pitches: mapped to player_id (from the pitch file’s ID column)
 
 Any renaming/mapping is handled at load time in app.R to keep downstream calculations consistent.
 
@@ -178,9 +178,9 @@ Aggregations compute on filtered subsets for the selected player.
 
 Minimal reactivity:
 
-Two summary tables (Recent vs Season) are computed and re-used across cards/tables
+- Two summary tables (Recent vs Season) are computed and re-used across cards/tables
 
-Trends are computed once per selected player
+- Trends are computed once per selected player
 
 
 ---
