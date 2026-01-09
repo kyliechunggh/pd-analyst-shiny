@@ -45,7 +45,7 @@ shiny::runApp(".")
 ```
 
 
-note: PDF report setup
+## note: PDF report setup
 
 The app generates a player-facing PDF using report.Rmd (via a Shiny download button).
 
