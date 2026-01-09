@@ -1,0 +1,158 @@
+---
+title: "Player Development Report"
+output:
+  pdf_document:
+    toc: false
+    number_sections: false
+params:
+  player_id: NA
+  recent: NULL
+  season: NULL
+  goals: NULL
+  trends: NULL
+  last_outing: NULL
+  recent_window: NULL
+  full_window: NULL
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+pct_fmt <- function(x) ifelse(is.na(x), "—", paste0(round(100*x, 1), "%"))
+slg_fmt <- function(x) ifelse(is.na(x), "—", sprintf("%.3f", x))
+date_fmt <- function(x) ifelse(is.na(x), "—", format(as.Date(x), "%b %d, %Y"))
+
+recent <- params$recent
+season <- params$season
+goals  <- params$goals
+trends <- params$trends
+last_out <- params$last_outing
+
+recent_window <- params$recent_window
+full_window   <- params$full_window
+
+```
+
+# Player: `r params$player_id`
+
+**Recent window:** `r if (!is.null(recent_window) && length(recent_window)==2) paste(date_fmt(recent_window[1]), "—", date_fmt(recent_window[2])) else "—"`  
+**Full-season window:** `r if (!is.null(full_window) && length(full_window)==2) paste(date_fmt(full_window[1]), "—", date_fmt(full_window[2])) else "—"`
+
+
+# Stated Performance Goals
+```{r}
+if (is.null(goals) || nrow(goals) == 0) {
+  cat("No goals recorded for this player.")
+} else {
+  g <- goals[1, ]
+  items <- data.frame(
+    Priority = c("Primary", "Secondary", "Tertiary"),
+    Goal = c(g$first_priority, g$second_priority, g$third_priority),
+    stringsAsFactors = FALSE
+  ) %>%
+    mutate(Goal = ifelse(is.na(Goal) | trimws(Goal) == "", "—", Goal))
+
+  knitr::kable(items, align = "l")
+}
+```
+
+
+# Most Recent Outing
+```{r}
+if (is.null(last_out) || nrow(last_out) == 0) {
+  cat("No outing data available.")
+} else {
+  lo <- last_out %>% slice(1)
+
+  tbl <- data.frame(
+    Field = c("Date", "PA", "BB%", "K%", "SLG", "FPS%"),
+    Value = c(
+      date_fmt(lo$sched_date),
+      as.character(lo$PA),
+      pct_fmt(lo$BB_pct),
+      pct_fmt(lo$K_pct),
+      slg_fmt(lo$SLG),
+      pct_fmt(lo$FPS_pct)
+    ),
+    stringsAsFactors = FALSE
+  )
+
+  knitr::kable(tbl, align = "l")
+}
+```
+
+
+# Most Recent Performance
+```{r}
+if (is.null(recent) || nrow(recent) == 0) {
+  cat("No recent performance data.")
+} else {
+  r1 <- recent %>% slice(1)
+  tbl <- data.frame(
+    Metric = c("PA","BB%","K%","SLG","FPS%"),
+    Value  = c(
+      as.character(r1$PA),
+      pct_fmt(r1$BB_pct),
+      pct_fmt(r1$K_pct),
+      slg_fmt(r1$SLG),
+      pct_fmt(r1$FPS_pct)
+    ),
+    stringsAsFactors = FALSE
+  )
+  knitr::kable(tbl, align = "l")
+}
+```
+
+
+# Full Season Performance
+```{r}
+if (is.null(season) || nrow(season) == 0) {
+  cat("No season performance data.")
+} else {
+  s1 <- season %>% slice(1)
+  tbl <- data.frame(
+    Metric = c("PA","BB%","K%","SLG","FPS%"),
+    Value  = c(
+      as.character(s1$PA),
+      pct_fmt(s1$BB_pct),
+      pct_fmt(s1$K_pct),
+      slg_fmt(s1$SLG),
+      pct_fmt(s1$FPS_pct)
+    ),
+    stringsAsFactors = FALSE
+  )
+  knitr::kable(tbl, align = "l")
+}
+```
+
+
+# Daily Trends
+```{r}
+if (!is.null(trends) && nrow(trends) > 1 && "sched_date" %in% names(trends)) {
+  pdat <- trends %>%
+    mutate(
+      sched_date = as.Date(sched_date),
+      BB_pct = as.numeric(BB_pct),
+      K_pct  = as.numeric(K_pct),
+      SLG    = as.numeric(SLG),
+      FPS_pct= as.numeric(FPS_pct)
+    )
+
+  long <- pdat %>%
+    select(sched_date, BB_pct, K_pct, SLG, FPS_pct) %>%
+    pivot_longer(-sched_date, names_to = "metric", values_to = "value")
+
+  ggplot(long, aes(sched_date, value)) +
+    geom_line(linewidth = 0.8) +
+    geom_point(size = 1.5) +
+    facet_wrap(~ metric, scales = "free_y", ncol = 2) +
+    labs(x = NULL, y = NULL) +
+    theme_minimal(base_size = 11)
+} else {
+  plot.new()
+  title("No trend data available.")
+}
+```
